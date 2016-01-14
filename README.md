@@ -1,2 +1,3 @@
-# sabr
-Eventually start actually adding stuff to this repo
+### sabr
+#### Collection of random sabermetric stuff in R, since I never used to back it up anywhere...
+
