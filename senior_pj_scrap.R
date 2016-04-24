@@ -1,18 +1,33 @@
 source("baseball_functions.R") # Personally written baseball functions
 library(devtools)
 source_gist(8892981)  # reads in parse.retrosheet2.pbp
-
 # parse.retrosheet2.pbp("2015") also read in for 2000-2014
-data <- read.csv("all2000.csv", header=F)
-roster <- read.csv("roster2000.csv")
-fields <- read.csv("fields.csv")
-names(data2010) <- fields[,"Header"]
+# manually move .csv files from folder to working directory
 
 # self-imposed limit on years
 years <- c(2000:2015)
 for (i in years){
     assign(paste0('dat', i),read.csv(paste0(paste0("all",i),".csv"), header=F))
 }
+
+# couldn't get this to work for whatever reason
+fields <- read.csv("fields.csv")
+names(dat2000) <- fields[,"Header"]
+names(dat2001) <- fields[,"Header"]
+names(dat2002) <- fields[,"Header"]
+names(dat2003) <- fields[,"Header"]
+names(dat2004) <- fields[,"Header"]
+names(dat2005) <- fields[,"Header"]
+names(dat2006) <- fields[,"Header"]
+names(dat2007) <- fields[,"Header"]
+names(dat2008) <- fields[,"Header"]
+names(dat2009) <- fields[,"Header"]
+names(dat2010) <- fields[,"Header"]
+names(dat2011) <- fields[,"Header"]
+names(dat2012) <- fields[,"Header"]
+names(dat2013) <- fields[,"Header"]
+names(dat2014) <- fields[,"Header"]
+names(dat2015) <- fields[,"Header"]
 
 # Takes data and divides it into n-sized rational groups of var
 chart_div <- function(data, n, var){
@@ -28,40 +43,52 @@ chart_div <- function(data, n, var){
             samp[i]=sum(((data[,col_num])[(1+n*(i-1)):(n*i)]))/n
         }
     }
-    samp
+    # return the divisions
+    samp 
 }
 
-# Quicker subset
-sub_set <- function(data, player_id){
-    (subset(data, BAT_ID=player_id))
+# Quicker subset (option to limit to at-bats)
+sub_set <- function(data, player_id, ab = FALSE){
+    if (ab == TRUE){
+        (subset(data, BAT_ID == player_id & AB_FL == TRUE))
+    }
+    else{
+        (subset(data, BAT_ID==player_id))
+    }
 }
 
-# Date creation and sort
+# DATE creation and sort
 dates <- function(data){
     data$DATE <- substr(data$GAME_ID, 4, 12)
     data[order(data$DATE),]
 }
 
+# Binary K
+alt_K <- function(data){
+    ifelse(data$EVENT_CD == 3, 1,0)
+}
 
 
 
-# ichiro 2010 data
-ichiro2010 <- sub_set(data2010, "suzui001")
-ichiro2010$K <- ifelse(ichiro2010$EVENT_CD == 3, 1,0)
-ichiro2010$DATE <- substr(ichiro2010$GAME_ID, 4, 12)
-ichiro2010 <- ichiro2010[order(ichiro2010$DATE),]
+# ichiro data
+ichiro2010 <- sub_set(dat2010, "suzui001")
+ichiro2010$K <- alt_K(ichiro2010)
+ichiro2010 <- dates(ichiro2010)
+samp2010 <- chart_div(ichiro2010, 30, "K")
+
+ichiro2011 <- sub_set(dat2011, "suzui001")
+ichiro2011$K <- alt_K(ichiro2011)
+ichiro2011 <- dates(ichiro2011)
+
+
+
+
 
 # ichiro 2011 example
-ichiro.AB <- subset(data, BAT_ID == "suzui001" & AB_FL == TRUE)
+ichiro.AB <- sub_set(dat2011, "suzui001", ab=TRUE)
 ichiro.AB$HIT <- ifelse(ichiro.AB$H_FL > 0, 1, 0)
 ichiro.AB$DATE <- substr(ichiro.AB$GAME_ID, 4, 12)
 ichiro.AB <- ichiro.AB[order(ichiro.AB$DATE),]
-
-ichiro2011 <- sub_set(data2011, "suzui001")
-ichiro$K <- ifelse(ichiro$EVENT_CD == 3, 1,0)
-ichiro$DATE <- substr(ichiro$GAME_ID, 4, 12)
-ichiro <- ichiro[order(ichiro$DATE),]
-
 
 # using full data from 2010 
 Dbar <- k0(sum(ichiro2010$K),length(ichiro2010$K))
