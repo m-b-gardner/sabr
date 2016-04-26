@@ -1,3 +1,5 @@
+# Baseball functions
+
 # Batting average
 avg <- function(hits, ab){
         return(hits/ab)
